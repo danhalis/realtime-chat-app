@@ -1,22 +1,37 @@
+import "@/globals.css";
 import type { AppProps } from "next/app";
 
 import { SessionProvider, signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import DashboardLayout from "./dashboard/layout";
 
 // https://next-auth.js.org/getting-started/client#custom-client-session-handling
 export default function App({
   Component,
   pageProps: { session, ...pageProps },
 }: AppProps) {
+  const router = useRouter();
   const pageAuth = Component.auth;
+
+  let page: React.ReactNode = null;
+  if (router.pathname.startsWith("/dashboard")) {
+    page = (
+      <DashboardLayout>
+        <Component {...pageProps} />
+      </DashboardLayout>
+    );
+  } else {
+    page = <Component {...pageProps} />;
+  }
+
   return (
     <SessionProvider session={session}>
       {pageAuth ? (
         <Auth signInRoute={pageAuth.redirect} loading={pageAuth.loading}>
-          <Component {...pageProps} />
+          {page}
         </Auth>
       ) : (
-        <Component {...pageProps} />
+        page
       )}
     </SessionProvider>
   );
