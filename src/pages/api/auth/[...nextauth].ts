@@ -2,7 +2,7 @@ import NextAuth from "next-auth/next";
 
 import { NextAuthOptions } from "next-auth";
 import { UpstashRedisAdapter } from "@next-auth/upstash-redis-adapter";
-import { db } from "@/lib/db";
+import { db } from "@/lib/data/db";
 import GoogleProvider, { GoogleProfile } from "next-auth/providers/google";
 
 export function getGoogleCredentials() {
