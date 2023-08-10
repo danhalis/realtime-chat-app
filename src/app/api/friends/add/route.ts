@@ -35,6 +35,14 @@ export async function POST(req: Request) {
       });
     }
 
+    const receivedFriendRequestFromTheSamePerson = Boolean(await db.sismember(`user:${session.user.id}:incoming_friend_requests`, idToAdd));
+
+    if (receivedFriendRequestFromTheSamePerson) {
+      return new Response("This person already sent you a friend request.", {
+        status: 400,
+      });
+    }
+
     const friendAlreadyAdded = Boolean(await db.sismember(`user:${session.user.id}:friends`, idToAdd));
 
     if (friendAlreadyAdded) {
@@ -51,6 +59,6 @@ export async function POST(req: Request) {
       return new Response("Invalid request payload", { status: 422 });
     }
 
-    return new Response("Invalid request payload", { status: 400 });
+    return new Response("Invalid request", { status: 400 });
   }
 }
