@@ -15,7 +15,7 @@ export function getRedisApiSecrets() {
   };
 }
 
-type Command = "get" | "zrange" | "sismember";
+type Command = "get" | "zrange" | "smembers" | "sismember";
 
 const { url: upstashRedisRestUrl, token: upstashRedisRestToken } =
   getRedisApiSecrets();
@@ -37,6 +37,6 @@ export async function redisFetch(command: Command, ...args: (string | number)[])
     throw new Error(`Error executing Upstash Redis command: ${response.statusText}`);
   }
 
-  const data = await response.json() as { result: string | null };
+  const data = await response.json() as { result: string | string[] | null };
   return data.result;
 }

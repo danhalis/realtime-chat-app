@@ -5,6 +5,8 @@ import React from "react";
 import { notFound } from "next/navigation";
 import { useSession } from "next-auth/react";
 import SignOutButton from "@/components/ui/SignOutButton";
+import useSWR from "swr";
+import axios from "axios";
 
 interface Props {
   children: React.ReactNode;
@@ -15,22 +17,41 @@ interface SidebarOption {
   name: string;
   href: string;
   icon: Icon;
+  itemCount?: number;
 }
-const sidebarOptions: SidebarOption[] = [
-  {
-    id: 1,
-    name: "Add friend",
-    href: "/dashboard/add",
-    icon: "UserPlus",
-  },
-];
 
 function DashboardLayout({ children }: Props) {
   const { data: session, status } = useSession();
 
   if (!session) {
-    return notFound();
+    notFound();
   }
+
+  const {
+    data: friendRequestCount,
+    error,
+    isLoading,
+  } = useSWR("/api/friends/requests/count", (url) =>
+    axios.get(url).then((res) => res.data)
+  );
+
+  console.log(friendRequestCount);
+
+  const sidebarOptions: SidebarOption[] = [
+    {
+      id: 1,
+      name: "Add friend",
+      href: "/dashboard/add",
+      icon: "UserPlus",
+    },
+    {
+      id: 2,
+      name: "Friend Requests",
+      href: "/dashboard/requests",
+      icon: "User",
+      itemCount: friendRequestCount,
+    },
+  ];
 
   return (
     <div className="w-full h-screen flex">
@@ -71,7 +92,7 @@ function DashboardLayout({ children }: Props) {
                     <Link
                       href={sidebarOption.href}
                       className="group
-                        flex gap-3
+                        flex items-center gap-3
                         rounded-md p-2
                         text-sm text-gray-700 font-semibold leading-6
                         hover:text-indigo-600 hover:bg-gray-50
@@ -90,6 +111,12 @@ function DashboardLayout({ children }: Props) {
                       </span>
 
                       <span className="truncate">{sidebarOption.name}</span>
+                      {sidebarOption.itemCount &&
+                      sidebarOption.itemCount > 0 ? (
+                        <div className="number-badge">
+                          {sidebarOption.itemCount}
+                        </div>
+                      ) : null}
                     </Link>
                   </li>
                 );
