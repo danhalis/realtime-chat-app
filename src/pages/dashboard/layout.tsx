@@ -1,6 +1,10 @@
 import { Icon, Icons } from "@/components/Icons";
+import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+import { notFound } from "next/navigation";
+import { useSession } from "next-auth/react";
+import SignOutButton from "@/components/ui/SignOutButton";
 
 interface Props {
   children: React.ReactNode;
@@ -22,70 +26,110 @@ const sidebarOptions: SidebarOption[] = [
 ];
 
 function DashboardLayout({ children }: Props) {
+  const { data: session, status } = useSession();
+
+  if (!session) {
+    return notFound();
+  }
+
   return (
     <div className="w-full h-screen flex">
-      <div
-        className="w-full max-w-xs h-full
-        flex flex-col grow gap-y-5
-        overflow-y-auto
-        border-r border-gray-200
-        bg-white
-        px-6"
-      >
-        <Link
-          className="h-16
-        flex shrink-0 items-center"
-          href="/dashboard"
+      <div className="flex flex-col w-full max-w-xs h-full border-r border-gray-200 bg-white">
+        {/* Nav */}
+        <div
+          className="h-full
+          flex flex-col grow gap-y-5
+          overflow-y-auto
+          px-6"
         >
-          <Icons.Logo className="w-auto h-8 text-indigo-600" />
-        </Link>
+          <Link
+            className="h-16
+            flex shrink-0 items-center"
+            href="/dashboard"
+          >
+            <Icons.Logo className="w-auto h-8 text-indigo-600" />
+          </Link>
 
-        <div className="text-xs font-semibold text-gray-400 leading-6">
-          Your chats
-        </div>
-        <nav className="flex flex-1 flex-col">
-          <ul className="flex flex-1 flex-col gap-y-7" role="list">
-            <li>// chats</li>
-            <li>
-              <div className="text-xs font-semibold text-gray-400 leading-6">
-                Overview
-              </div>
+          <div>
+            <div className="text-xs font-semibold text-gray-400 leading-6">
+              Your chats
+            </div>
+            <ul className="flex flex-col gap-y-5" role="list">
+              <li>// chats</li>
+            </ul>
+          </div>
 
-              <ul className="-mx-2 mt-2 space-y-1" role="list">
-                {sidebarOptions.map((sidebarOption) => {
-                  const Icon = Icons[sidebarOption.icon];
-                  return (
-                    <li key={sidebarOption.id}>
-                      <Link
-                        href={sidebarOption.href}
-                        className="group
+          <div>
+            <div className="text-xs font-semibold text-gray-400 leading-6">
+              Overview
+            </div>
+            <ul className="space-y-1" role="list">
+              {sidebarOptions.map((sidebarOption) => {
+                const Icon = Icons[sidebarOption.icon];
+                return (
+                  <li key={sidebarOption.id}>
+                    <Link
+                      href={sidebarOption.href}
+                      className="group
                         flex gap-3
                         rounded-md p-2
                         text-sm text-gray-700 font-semibold leading-6
                         hover:text-indigo-600 hover:bg-gray-50
                         "
-                      >
-                        <span
-                          className="w-6 h-6
+                    >
+                      <span
+                        className="w-6 h-6
                           flex shrink-0 items-center justify-center
                           rounded-lg
                           border border-gray-200
                           text-[0.625rem] text-gray-400 font-medium
                           bg-white
                           group-hover:border-indigo-600 group-hover:text-indigo-600"
-                        >
-                          <Icon className="w-4 h-4" />
-                        </span>
+                      >
+                        <Icon className="w-4 h-4" />
+                      </span>
 
-                        <span className="truncate">{sidebarOption.name}</span>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </li>
-          </ul>
-        </nav>
+                      <span className="truncate">{sidebarOption.name}</span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </div>
+
+        {/* Profile Info */}
+        <div
+          className="
+            justify-between
+            flex items-center
+            space-x-2
+            px-2 py-3
+            text-sm text-gray-900 font-semibold leading-6
+          "
+        >
+          <Image
+            className="rounded-full"
+            src={session.user.image || ""}
+            width={32}
+            height={32}
+            referrerPolicy="no-referrer"
+            alt="Profile Picture"
+          />
+          <span className="sr-only">Your Profile</span>
+          <div className="truncate">
+            <span className="block truncate" aria-hidden="true">
+              {session.user.name}
+            </span>
+            <span
+              className="block truncate text-xs text-zinc-400"
+              aria-hidden="true"
+            >
+              {session.user.email}
+            </span>
+          </div>
+          <SignOutButton className="h-full aspect-square" />
+        </div>
       </div>
       {children}
     </div>
