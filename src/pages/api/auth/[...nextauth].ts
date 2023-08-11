@@ -75,7 +75,16 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
 
-    redirect: () => "/dashboard",
+    // redirect: (params: {
+    //   url: string,
+    //   baseUrl: string,
+    // }) => {
+    //   // Allows relative callback URLs
+    //   if (params.url.startsWith("/")) return `${params.baseUrl}${params.url}`
+    //   // Allows callback URLs on the same origin
+    //   else if (new URL(params.url).origin === params.baseUrl) return params.url
+    //   return params.baseUrl
+    // },
   },
 };
 

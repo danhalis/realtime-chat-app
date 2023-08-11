@@ -5,14 +5,20 @@ import Button from "@/components/ui/Button";
 import Image from "next/image";
 import { signIn } from "next-auth/react";
 import { toast } from "react-hot-toast";
+import { useSearchParams } from "next/navigation";
 
 function SignInPage() {
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams?.get("callbackUrl");
+
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const signInWithGoogle = async () => {
     setIsLoading(true);
     try {
-      await signIn("google");
+      await signIn("google", {
+        callbackUrl: callbackUrl ?? "/dashboard"
+      });
     } catch (error) {
       toast.error("Something went wrong when signing in.");
     } finally {
