@@ -1,4 +1,4 @@
-import AddFriendForm from "@/components/ui/AddFriendForm";
+import AddFriendForm from "@/components/ui/friends/AddFriendForm";
 import React from "react";
 
 function AddFriendPage() {
@@ -9,10 +9,5 @@ function AddFriendPage() {
     </main>
   );
 }
-
-AddFriendPage.auth = {
-  // loading: <p>Authenticating ...</p>,
-  redirect: "/signin",
-};
 
 export default AddFriendPage;

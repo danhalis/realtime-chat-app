@@ -1,5 +1,6 @@
+"use client"
 import React, { useState } from "react";
-import Button from "./Button";
+import Button from "../Button";
 import { cn } from "@/lib/utils";
 import { addFriendValidator } from "@/lib/validations/add-friend";
 import axios, { AxiosError } from "axios";

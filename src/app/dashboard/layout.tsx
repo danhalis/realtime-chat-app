@@ -4,9 +4,12 @@ import Link from "next/link";
 import React from "react";
 import { notFound } from "next/navigation";
 import { useSession } from "next-auth/react";
-import SignOutButton from "@/components/ui/SignOutButton";
+import SignOutButton from "@/components/ui/auth/SignOutButton";
 import useSWR from "swr";
 import axios from "axios";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/pages/api/auth/[...nextauth]";
+import { db } from "@/lib/data/db";
 
 interface Props {
   children: React.ReactNode;
@@ -20,34 +23,28 @@ interface SidebarOption {
   itemCount?: number;
 }
 
-function DashboardLayout({ children }: Props) {
-  const { data: session, status } = useSession();
+async function DashboardLayout({ children }: Props) {
+  const session = await getServerSession(authOptions);
 
   if (!session) {
     notFound();
   }
 
-  const {
-    data: friendRequestCount,
-    error,
-    isLoading,
-  } = useSWR("/api/friends/requests/count", (url) =>
-    axios.get(url).then((res) => res.data)
-  );
-
-  console.log(friendRequestCount);
+  const friendRequestCount = (await db.smembers(
+    `user:${session.user.id}:incoming_friend_requests`,
+  )).length;
 
   const sidebarOptions: SidebarOption[] = [
     {
       id: 1,
       name: "Add friend",
-      href: "/dashboard/add",
+      href: "/dashboard/friends/add",
       icon: "UserPlus",
     },
     {
       id: 2,
       name: "Friend Requests",
-      href: "/dashboard/requests",
+      href: "/dashboard/friends/requests",
       icon: "User",
       itemCount: friendRequestCount,
     },

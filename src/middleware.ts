@@ -11,21 +11,21 @@ export default withAuth(
     const publicRoutes = ["/signin"];
     const accessingPublicRoute = publicRoutes.some(publicRoute => pathname.startsWith(publicRoute));
 
-    console.log("middleware");
     if (jwtToken) {
-      if (pathname.startsWith("/signin") || pathname.startsWith("/")) {
+      if (pathname.startsWith("/signin") || pathname === "/") {
         // Redirect to dashboard
         return NextResponse.redirect(new URL("/dashboard", req.url));
       }
     }
     else {
-      if (accessingPublicRoute) {
-        return NextResponse.next();
+      if (!accessingPublicRoute) {
+        const signInUrl = new URL("/signin", req.url);
+        signInUrl.searchParams.set("callbackUrl", req.url);
+        return NextResponse.redirect(signInUrl);
       }
-      const signInUrl = new URL("/signin", req.url);
-      signInUrl.searchParams.set("callbackUrl", req.url);
-      return NextResponse.redirect(signInUrl);
     }
+
+    return NextResponse.next();
   },
   {
     pages: {
@@ -39,5 +39,5 @@ export default withAuth(
 )
 
 export const config = {
-  matcher: ["/", "/signin"]
+  matcher: ["/:path*",]
 }

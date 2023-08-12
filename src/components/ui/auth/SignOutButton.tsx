@@ -1,5 +1,6 @@
+"use client"
 import React, { ButtonHTMLAttributes, useState } from 'react'
-import Button from './Button';
+import Button from '../Button';
 import { signOut } from 'next-auth/react';
 import toast from 'react-hot-toast';
 import { Loader2, LogOut } from 'lucide-react';
