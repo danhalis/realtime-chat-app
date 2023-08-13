@@ -9,13 +9,13 @@ export async function GET(req: Request) {
       return new Response("Unauthorized", { status: 401 });
     }
 
-    const friendRequestSenderIds = (await db.smembers(
-      `user:${session.user.id}:incoming_friend_requests`,
+    const friendIds = (await db.smembers(
+      `user:${session.user.id}:friends`,
     ));
 
-    const friendRequestSenders = await getUsersByUserIds(friendRequestSenderIds);
+    const friends = await getUsersByUserIds(friendIds);
 
-    return new Response(JSON.stringify(friendRequestSenders), { status: 200 });
+    return new Response(JSON.stringify(friends), { status: 200 });
   } catch (error) {
     return new Response("Invalid request payload", { status: 400 });
   }

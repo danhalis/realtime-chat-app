@@ -1,5 +1,5 @@
 import FriendRequestList from "@/components/ui/friends/FriendRequestList";
-import { db } from "@/lib/data/db";
+import { db, getFriendRequestSendersByUserId } from "@/lib/data/db";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import { getServerSession } from "next-auth";
 import { notFound } from "next/navigation";
@@ -12,25 +12,17 @@ async function FriendRequestPage() {
     notFound();
   }
 
-  const friendRequestSenderIds = (await db.smembers(
-    `user:${session.user.id}:incoming_friend_requests`,
-  ));
-  const friendRequestSenders = await Promise.all(
-    (friendRequestSenderIds.map(async (senderId: string) => db.get<User>(`user:${senderId}`)).filter((value) => !!value))
-  );
+  const friendRequestSenders = await getFriendRequestSendersByUserId(session.user.id);
 
   return (
-    <main className="pt-8">
-      <h1 className="text-5xl font-bold mb-8">Incoming friend requests</h1>
-      <FriendRequestList friendRequests={
-        friendRequestSenders?.map<IncomingFriendRequest>((friendRequestSender) => {
-        return {
-          senderId: friendRequestSender!.id,
-          senderEmail: friendRequestSender!.email,
-          senderImage: friendRequestSender!.image,
-        }
-      })} />
-    </main>
+    <FriendRequestList friendRequests={
+      friendRequestSenders?.map<IncomingFriendRequest>((friendRequestSender) => {
+      return {
+        senderId: friendRequestSender!.id,
+        senderEmail: friendRequestSender!.email,
+        senderImage: friendRequestSender!.image,
+      }
+    })} />
   );
 }
 

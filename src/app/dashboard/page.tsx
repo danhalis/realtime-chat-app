@@ -1,6 +1,7 @@
 import React from 'react'
 
-function DashboardPage() {
+async function DashboardPage() {
+  await new Promise(r => setTimeout(r, 2000));
   return (
     <div>DashboardPage</div>
   )
