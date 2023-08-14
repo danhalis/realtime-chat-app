@@ -86,6 +86,7 @@ async function ChatPage({ params: { chatId } }: Props) {
       </section>
       <Messages
         userId={session.user.id}
+        chatId={getChatId(session.user.id, chatPartner.id)}
         userAvatar={session.user.image}
         friendAvatar={chatPartner.image}
         initialMessages={initialMessages}

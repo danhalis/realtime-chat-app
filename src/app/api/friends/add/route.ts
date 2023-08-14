@@ -1,4 +1,5 @@
 import { db } from "@/lib/data/db";
+import { PusherEvent, pusherServer } from "@/lib/pusher";
 import { addFriendValidator } from "@/lib/validations/add-friend";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import { getServerSession } from "next-auth";
@@ -27,7 +28,12 @@ export async function POST(req: Request) {
       return new Response("You can not add yourself.", { status: 400 });
     }
 
-    const friendRequestAlreadySent = Boolean(await db.sismember(`user:${idToAdd}:incoming_friend_requests`, session.user.id));
+    const friendRequestAlreadySent = Boolean(
+      await db.sismember(
+        `user:${idToAdd}:incoming_friend_requests`,
+        session.user.id
+      )
+    );
 
     if (friendRequestAlreadySent) {
       return new Response("You already sent a friend request to this user.", {
@@ -35,7 +41,12 @@ export async function POST(req: Request) {
       });
     }
 
-    const receivedFriendRequestFromTheSamePerson = Boolean(await db.sismember(`user:${session.user.id}:incoming_friend_requests`, idToAdd));
+    const receivedFriendRequestFromTheSamePerson = Boolean(
+      await db.sismember(
+        `user:${session.user.id}:incoming_friend_requests`,
+        idToAdd
+      )
+    );
 
     if (receivedFriendRequestFromTheSamePerson) {
       return new Response("This person already sent you a friend request.", {
@@ -43,7 +54,9 @@ export async function POST(req: Request) {
       });
     }
 
-    const friendAlreadyAdded = Boolean(await db.sismember(`user:${session.user.id}:friends`, idToAdd));
+    const friendAlreadyAdded = Boolean(
+      await db.sismember(`user:${session.user.id}:friends`, idToAdd)
+    );
 
     if (friendAlreadyAdded) {
       return new Response("You are already friend with this user.", {
@@ -51,7 +64,23 @@ export async function POST(req: Request) {
       });
     }
 
-    db.sadd(`user:${idToAdd}:incoming_friend_requests`, session.user.id);
+    const rowsAdded = await db.sadd(`user:${idToAdd}:incoming_friend_requests`, session.user.id);
+
+    if (rowsAdded !== 1) {
+      return new Response("Something went wrong.", {
+        status: 500,
+      });
+    }
+
+    pusherServer.trigger(
+      `user_${idToAdd}_incoming_friend_requests`,
+      PusherEvent.IncomingFriendRequests,
+      {
+        senderId: session.user.id,
+        senderEmail: session.user.email,
+        senderImage: session.user.image,
+      }
+    );
 
     return new Response("OK");
   } catch (error) {

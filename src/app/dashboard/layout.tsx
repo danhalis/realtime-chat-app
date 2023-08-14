@@ -11,7 +11,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import { db, getFriendRequestSendersByUserId, getFriendsByUserId } from "@/lib/data/db";
 import SidebarChatList from "@/components/ui/chat/SidebarChatList";
-import SidebarOption from "@/components/server/SidebarOption";
+import SidebarOption from "@/components/ui/sidebar/SidebarOption";
+import FriendRequestListSidebarOption from "@/components/ui/sidebar/FriendRequestListSidebarOption";
 
 interface Props {
   children: React.ReactNode;
@@ -22,7 +23,7 @@ interface SidebarOption {
   name: string;
   href: string;
   icon: Icon;
-  fetchIconCount?: () => Promise<number>;
+  itemCount?: number;
 }
 
 async function DashboardLayout({ children }: Props) {
@@ -46,7 +47,7 @@ async function DashboardLayout({ children }: Props) {
       name: "Friend Requests",
       href: "/dashboard/friends/requests",
       icon: "User",
-      fetchIconCount: async () => (await getFriendRequestSendersByUserId(session.user.id)).length,
+      itemCount: (await getFriendRequestSendersByUserId(session.user.id)).length,
     },
   ];
 
@@ -80,17 +81,20 @@ async function DashboardLayout({ children }: Props) {
               Overview
             </div>
             <ul className="space-y-1" role="list">
-              {sidebarOptions.map((sidebarOption) => (
-                // <Suspense fallback="loading">
-                  <SidebarOption
-                    key={sidebarOption.id}
-                    href={sidebarOption.href}
-                    name={sidebarOption.name}
-                    icon={sidebarOption.icon}
-                    fetchItemCount={sidebarOption.fetchIconCount}
-                  />
-                // </Suspense>
-              ))}
+              <SidebarOption
+                key={1}
+                href="/dashboard/friends/add"
+                name="Add friend"
+                icon="UserPlus"
+              />
+              <FriendRequestListSidebarOption
+                key={2}
+                userId={session.user.id}
+                href="/dashboard/friends/requests"
+                name="Friend Requests"
+                icon="User"
+                itemCount={(await getFriendRequestSendersByUserId(session.user.id)).length}
+              />
             </ul>
           </div>
         </div>

@@ -15,7 +15,7 @@ async function FriendRequestPage() {
   const friendRequestSenders = await getFriendRequestSendersByUserId(session.user.id);
 
   return (
-    <FriendRequestList friendRequests={
+    <FriendRequestList userId={session.user.id} friendRequests={
       friendRequestSenders?.map<IncomingFriendRequest>((friendRequestSender) => {
       return {
         senderId: friendRequestSender!.id,

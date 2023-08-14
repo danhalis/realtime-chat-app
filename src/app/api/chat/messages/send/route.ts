@@ -1,4 +1,10 @@
-import { db, getFriendIdsByUserId, getFriendsByUserId, getUserByUserId } from "@/lib/data/db";
+import {
+  db,
+  getFriendIdsByUserId,
+  getFriendsByUserId,
+  getUserByUserId,
+} from "@/lib/data/db";
+import { PusherEvent, pusherServer } from "@/lib/pusher";
 import { getUserIdsFromChatId } from "@/lib/utils";
 import { addFriendValidator } from "@/lib/validations/add-friend";
 import { messageValidator } from "@/lib/validations/message";
@@ -14,7 +20,7 @@ export async function POST(req: Request) {
       return new Response("Unauthorized", { status: 401 });
     }
 
-    const { text, chatId }: { text: string, chatId: string } = await req.json();
+    const { text, chatId }: { text: string; chatId: string } = await req.json();
 
     const [userId1, userId2] = getUserIdsFromChatId(chatId);
     if (session.user.id !== userId1 && session.user.id !== userId2) {
@@ -36,15 +42,24 @@ export async function POST(req: Request) {
       senderId: session.user.id,
       receiverId: friendId,
       text,
-      timeStamp
-    }
+      timeStamp,
+    };
     const validatedMessage = messageValidator.parse(message);
-    await db.zadd(`chat:${chatId}:messages`,
-      {
-        score: timeStamp,
-        member: JSON.stringify(validatedMessage),
-      }
-    )
+    const rowsAdded = await db.zadd(`chat:${chatId}:messages`, {
+      score: timeStamp,
+      member: JSON.stringify(validatedMessage),
+    });
+    if (rowsAdded !== 1) {
+      return new Response("Something went wrong.", {
+        status: 500,
+      });
+    }
+    pusherServer.trigger(
+      `chat_${chatId}_messages`,
+      PusherEvent.NewMessages,
+      validatedMessage
+    );
+
     return new Response("OK");
   } catch (error) {
     if (error instanceof ZodError) {

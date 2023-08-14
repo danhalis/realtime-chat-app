@@ -1,32 +1,18 @@
+"use client"
 import React, { Suspense } from "react";
 import { Icon, Icons } from "@/components/Icons";
 import Link from "next/link";
+import NumberBadge from "./NumberBadge";
 
-interface Props {
+export interface SidebarOptionProps {
   key: React.Key | null | undefined;
   name: string;
   href: string;
   icon: Icon;
-  fetchItemCount?: () => Promise<number>;
+  itemCount?: number;
 }
 
-async function NumberBadge({
-  fetchItemCount,
-}: {
-  fetchItemCount?: () => Promise<number>;
-}) {
-  let itemCount = 0;
-  if (fetchItemCount) {
-    itemCount = await fetchItemCount();
-  }
-  return (
-    <>
-      {itemCount > 0 ? <span className="number-badge">{itemCount}</span> : null}
-    </>
-  );
-}
-
-async function SidebarOption({ key, name, href, icon, fetchItemCount }: Props) {
+function SidebarOption({ key, name, href, icon, itemCount = 0 }: SidebarOptionProps) {
   const Icon = Icons[icon];
 
   return (
@@ -53,9 +39,7 @@ async function SidebarOption({ key, name, href, icon, fetchItemCount }: Props) {
         </span>
 
         <span className="truncate">{name}</span>
-        <Suspense>
-          <NumberBadge fetchItemCount={fetchItemCount} />
-        </Suspense>
+        <NumberBadge number={itemCount} />
       </Link>
     </li>
   );

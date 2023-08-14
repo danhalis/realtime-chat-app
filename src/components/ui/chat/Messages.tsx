@@ -1,23 +1,42 @@
 "use client";
+import { PusherEvent, pusherClient } from "@/lib/pusher";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import Image from "next/image";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 interface Props {
   userId: string;
+  chatId: string;
   userAvatar?: string | null;
   friendAvatar?: string | null;
   initialMessages: Message[];
 }
 function Messages({
   userId,
+  chatId,
   userAvatar,
   friendAvatar,
   initialMessages,
 }: Props) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const channelName = `chat_${chatId}_messages`;
+
+    const onMessage = (message: Message) => {
+      setMessages((prev) => [...prev, message]);
+    };
+    pusherClient.subscribe(channelName);
+    pusherClient.bind(PusherEvent.NewMessages, onMessage);
+
+    return () => {
+      pusherClient.unsubscribe(channelName);
+      pusherClient.unbind(PusherEvent.NewMessages, onMessage);
+    };
+  }, []);
+
   return (
     <section
       id="messages"
